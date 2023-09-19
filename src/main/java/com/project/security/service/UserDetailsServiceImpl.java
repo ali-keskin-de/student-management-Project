@@ -1,7 +1,7 @@
 package com.project.security.service;
 
 import com.project.entity.user.User;
-import com.project.repository.UserRepository;
+import com.project.repository.user.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (user != null){
             return new UserDetailsImpl(
                     user.getId(),
-                    user.getUserName(),
+                    user.getUsername(),
                     user.getName(),
                     false,
                     user.getPassword(),

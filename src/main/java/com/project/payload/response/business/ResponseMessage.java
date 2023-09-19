@@ -1,4 +1,4 @@
-package com.project.payload.response;
+package com.project.payload.response.business;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL) // Json dosyasindan istedigimiz verileri dönmesini saglar burda null olmayanlar olsun diyorum
+@JsonInclude(JsonInclude.Include.NON_NULL) // Json dosyasindan istedigimiz verileri dönmesini saglar burda null olmayanlar olsun diyoruz
 public class ResponseMessage<E> {
     private E object;
     private HttpStatus httpStatus;

@@ -30,7 +30,7 @@ public class User {
     private Long id;
 
     @Column(unique = true)
-    private String userName;
+    private String username;
 
     @Column(unique = true)
     private String ssn;
@@ -70,6 +70,7 @@ public class User {
 
     private Long advisorTeacherId;// Bu field student lar icin eklendi.
 
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// Db'de giderken Jsonda olmasin ama Db'e gelirken json'da  olsun ve Db'e  yazilsin
