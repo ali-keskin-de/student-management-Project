@@ -8,6 +8,7 @@ import com.project.payload.mappers.UserMapper;
 import com.project.payload.messages.ErrorMessages;
 import com.project.payload.messages.SuccessMessages;
 import com.project.payload.request.user.UserRequest;
+import com.project.payload.request.user.UserRequestWithoutPassword;
 import com.project.payload.response.abstracts.BaseUserResponse;
 import com.project.payload.response.business.ResponseMessage;
 import com.project.payload.response.user.UserResponse;
@@ -23,31 +24,32 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-
-    private final PageableHelper pageableHelper;
     private final UserRepository userRepository;
     private final UniquePropertyValidator uniquePropertyValidator;
     private final UserMapper userMapper;
     private final UserRoleService userRoleService;
     private final PasswordEncoder passwordEncoder;
+    private final PageableHelper pageableHelper;
 
     // Not: saveUser() ****** Teacher ve Student haric **************
     public ResponseMessage<UserResponse> saveUser(UserRequest userRequest, String userRole) { // Admin, Dean, ViceDean
         // !!! unique kontrolu
-        uniquePropertyValidator.checkDuplicate(userRequest.getUsername(), userRequest.getSsn(),
+        uniquePropertyValidator.checkDuplicate(userRequest.getUsername(),userRequest.getSsn(),
                 userRequest.getPhoneNumber(), userRequest.getEmail());
         // !!! DTO --> POJO
         User user = userMapper.mapUserRequestToUser(userRequest);
         // !!! Role bilgisi setlenecek
-        if (userRole.equalsIgnoreCase(RoleType.ADMIN.name())) {
+        if(userRole.equalsIgnoreCase(RoleType.ADMIN.name())){
 
-            if (Objects.equals(userRequest.getUsername(), "Admin")) {
+            if(Objects.equals(userRequest.getUsername(),"Admin")){
                 user.setBuilt_in(true);
             }
             user.setUserRole(userRoleService.getUserRole(RoleType.ADMIN));
@@ -75,12 +77,10 @@ public class UserService {
 
     }
 
-
+    // Not: getAllAdminOrDeanorViceDean ******************************
     public Page<UserResponse> getUserByPage(int page, int size, String sort, String type, String userRole) {
         Pageable pageable = pageableHelper.getPageableWithProperties(page, size, sort, type);
-
         return userRepository.findByUserByRole(userRole, pageable).map(userMapper::mapUserToUserResponse);
-
     }
 
     // Not: getUserById() *********************************************
@@ -88,10 +88,10 @@ public class UserService {
 
         BaseUserResponse baseUserResponse = null;
         // !!! id var mi ?
-        User user = userRepository.findById(userId).orElseThrow(() ->
+        User user = userRepository.findById(userId).orElseThrow(()->
                 new ResourceNotFoundException(String.format(ErrorMessages.NOT_FOUND_USER_MESSAGE, userId)));
 
-        if (user.getUserRole().getRoleType() == RoleType.STUDENT) {
+        if(user.getUserRole().getRoleType() == RoleType.STUDENT) {
             baseUserResponse = userMapper.mapUserToStudentResponse(user);
         } else if (user.getUserRole().getRoleType() == RoleType.TEACHER) {
             baseUserResponse = userMapper.mapUserToTeacherResponse(user);
@@ -137,22 +137,27 @@ public class UserService {
     public ResponseMessage<BaseUserResponse> updateUser(UserRequest userRequest, Long userId) {
         // !!! id kontrol
         User user = isUserExist(userId);
-        // TODO : Build_in kontrolü
-        //!!! Unique kontrolu
-        uniquePropertyValidator.checkUniqueProperties(user, userRequest);
-        // DTO--> POJO cevirdik
+        // TODO : built_in kontrolu yapilacak ( ODEV )
+        if(Boolean.TRUE.equals(user.getBuilt_in())) {
+            throw new BadRequestException(ErrorMessages.NOT_PERMITTED_METHOD_MESSAGE);
+        }
+        // !!! unique kontrolu
+        uniquePropertyValidator.checkUniqueProperties(user,userRequest);
+
+        // !!! DTO --> POJO
         User updatedUser = userMapper.mapUserRequestToUpdatedUser(userRequest, userId);
-        // !!! Password encode
+        // !!! Password Encode
         updatedUser.setPassword(passwordEncoder.encode(userRequest.getPassword()));
 
-        User saveUser = userRepository.save(updatedUser);
+        updatedUser.setUserRole(user.getUserRole());
+
+        User savedUser = userRepository.save(updatedUser);
 
         return ResponseMessage.<BaseUserResponse>builder()
                 .message(SuccessMessages.USER_UPDATE_MESSAGE)
                 .httpStatus(HttpStatus.OK)
                 .object(userMapper.mapUserToUserResponse(savedUser))
                 .build();
-
 
     }
 
@@ -161,5 +166,50 @@ public class UserService {
                 new ResourceNotFoundException(String.format(ErrorMessages.NOT_FOUND_USER_MESSAGE, userId)));
     }
 
+    // Not: updateUserForUsers() *************************************
+    public ResponseEntity<String> updateUserForUsers(UserRequestWithoutPassword userRequest, HttpServletRequest request) {
 
+        String userName = (String) request.getAttribute("username");
+
+        User user = userRepository.findByUsernameEquals(userName);
+
+        // TODO : built_in kontrolu ( ODEV )
+        if(Boolean.TRUE.equals(user.getBuilt_in())) {
+            throw new BadRequestException(ErrorMessages.NOT_PERMITTED_METHOD_MESSAGE);
+        }
+
+        // !!! unique kontrolu
+        uniquePropertyValidator.checkUniqueProperties(user, userRequest );
+        // !!! update islemi
+        user.setBirthDay(userRequest.getBirthDay());
+        user.setEmail(userRequest.getEmail());
+        user.setPhoneNumber(userRequest.getPhoneNumber());
+        user.setGender(userRequest.getGender());
+        user.setBirthPlace(userRequest.getBirthPlace());
+        user.setName(userRequest.getName());
+        user.setSurname(userRequest.getSurname());
+        user.setSsn(userRequest.getSsn());
+        user.setUsername(userRequest.getUsername());
+
+        userRepository.save(user);
+
+        String message = SuccessMessages.USER_UPDATE_MESSAGE;
+
+        return ResponseEntity.ok(message);
+
+    }
+
+    // Not: getByName() ***********************************************
+    public List<UserResponse> getUserByName(String name) {
+
+        return userRepository.getUserByNameContaining(name)
+                .stream()
+                .map(userMapper::mapUserToUserResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Not: Runner icin yazildi ***************************************
+    public long countAllAdmins(){
+        return userRepository.countAdmin(RoleType.ADMIN);
+    }
 }

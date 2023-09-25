@@ -1,8 +1,8 @@
 package com.project.payload.mappers;
 
-
 import com.project.entity.user.User;
 import com.project.payload.request.abstracts.BaseUserRequest;
+import com.project.payload.request.user.TeacherRequest;
 import com.project.payload.request.user.UserRequest;
 import com.project.payload.response.abstracts.BaseUserResponse;
 import com.project.payload.response.user.StudentResponse;
@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 public class UserMapper {
 
     public UserResponse mapUserToUserResponse(User user){
-
-
         return UserResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
@@ -29,8 +27,8 @@ public class UserMapper {
                 .email(user.getEmail())
                 .userRole(user.getUserRole().getRoleType().name())
                 .build();
-
     }
+
     public User mapUserRequestToUser(BaseUserRequest userRequest){
 
         return User.builder()
@@ -50,7 +48,6 @@ public class UserMapper {
     }
 
     public User mapUserRequestToUpdatedUser(UserRequest userRequest, Long userId){
-
         return User.builder()
                 .id(userId)
                 .username(userRequest.getUsername())
@@ -65,7 +62,6 @@ public class UserMapper {
                 .email(userRequest.getEmail())
                 .built_in(userRequest.getBuiltIn())
                 .build();
-
     }
 
 
@@ -89,8 +85,6 @@ public class UserMapper {
                 .build();
     }
 
-
-
     public TeacherResponse mapUserToTeacherResponse(User teacher) {
 
         return TeacherResponse.builder()
@@ -109,5 +103,42 @@ public class UserMapper {
                 .build();
 
     }
-}
 
+    public User mapTeacherRequestToUser(TeacherRequest teacherRequest){
+
+        return User.builder()
+                .name(teacherRequest.getName())
+                .surname(teacherRequest.getSurname())
+                .ssn(teacherRequest.getSsn())
+                .username(teacherRequest.getUsername())
+                .birthDay(teacherRequest.getBirthDay())
+                .birthPlace(teacherRequest.getBirthPlace())
+                .password(teacherRequest.getPassword())
+                .phoneNumber(teacherRequest.getPhoneNumber())
+                .email(teacherRequest.getEmail())
+                .isAdvisor(teacherRequest.getIsAdvisorTeacher())
+                .built_in(teacherRequest.getBuiltIn())
+                .gender(teacherRequest.getGender())
+                .build();
+
+    }
+
+    public User mapTeacherRequestToUpdatedUser(TeacherRequest userRequest, Long userId) {
+
+        return User.builder()
+                .id(userId)
+                .username(userRequest.getUsername())
+                .name(userRequest.getName())
+                .surname(userRequest.getSurname())
+                .password(userRequest.getPassword())
+                .ssn(userRequest.getSsn())
+                .birthDay(userRequest.getBirthDay())
+                .birthPlace(userRequest.getBirthPlace())
+                .phoneNumber(userRequest.getPhoneNumber())
+                .gender(userRequest.getGender())
+                .email(userRequest.getEmail())
+                .isAdvisor(userRequest.getIsAdvisorTeacher())
+                .build();
+    }
+
+}

@@ -5,6 +5,7 @@ import com.project.entity.enums.RoleType;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "roles")
@@ -26,6 +27,5 @@ public class UserRole {
    private RoleType roleType;
 
    private String roleName;
-
 
 }
