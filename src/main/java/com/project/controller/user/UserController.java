@@ -27,7 +27,7 @@ public class UserController {
 
     // saveUser()************************************************************* Teacher & Student haric ***********
     @PostMapping("/save/{userRole}") // http://localhost:8080/user/save/Admin  + Post
-    @PreAuthorize("hashAnyAuthorty('ADMIN')")
+    @PreAuthorize("hashAnyAuthority('ADMIN')")
     public ResponseEntity<ResponseMessage<UserResponse>> saveUser(@PathVariable String userRole, @RequestBody @Valid UserRequest userRequest){
 
         return ResponseEntity.ok(userService.saveUser(userRequest,userRole));
