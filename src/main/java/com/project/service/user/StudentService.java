@@ -14,6 +14,7 @@ import com.project.payload.response.business.ResponseMessage;
 import com.project.payload.response.user.StudentResponse;
 import com.project.repository.user.UserRepository;
 import com.project.service.business.LessonProgramService;
+import com.project.service.validator.DateTimeValidator;
 import com.project.service.validator.UniquePropertyValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,13 +29,13 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class StudentService {
 
-    private LessonProgramService lessonProgramService;
     private final UserRepository userRepository;
     private final UniquePropertyValidator uniquePropertyValidator;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final UserRoleService userRoleService;
-
+    private final LessonProgramService lessonProgramService;
+    private final DateTimeValidator dateTimeValidator;
 
     // Not : saveStudent() *****************************
     public ResponseMessage<StudentResponse> saveStudent(StudentRequest studentRequest) {
@@ -131,14 +132,12 @@ public class StudentService {
                 new ResourceNotFoundException(String.format(ErrorMessages.NOT_FOUND_USER_MESSAGE, userId)));
     }
 
+    // Not: addLessonProgramToStudentLessonsProgram() *********
     public ResponseMessage<StudentResponse> addLessonProgramToStudent(String userName, ChooseLessonProgramWithId chooseLessonProgramWithId) {
-
-        //!!! userName ile user getiriliyor
-        User student = userRepository.findByUsernameEquals(userName); // Bu nesneye ihtiyacimiz var buna LessonProgramlar eklemeler yapacagiz
-
+        // !!!  userName ile User getiriliyor
+        User student = userRepository.findByUsernameEquals(userName);
         // !!! DTO da talep edilen LP ler getirildi
-       Set<LessonProgram> lessonProgramSet = lessonProgramService.getLessonProgramById(chooseLessonProgramWithId.getLessonProgramId());
-
+        Set<LessonProgram> lessonProgramSet = lessonProgramService.getLessonProgramById(chooseLessonProgramWithId.getLessonProgramId());
         // !!! ogrencinin mevcuttaki lessonProgramlarini getiriyorum
         Set<LessonProgram> studentCurrentLessonProgram = student.getLessonsProgramList();
         // !!! talep edilen ile mevcutta bir cakisma var mi kontrolu
