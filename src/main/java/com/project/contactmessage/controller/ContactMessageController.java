@@ -16,30 +16,17 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import com.project.contactmessage.dto.ContactMessageRequest;
-import com.project.contactmessage.dto.ContactMessageResponse;
-import com.project.contactmessage.dto.ContactMessageUpdateRequest;
-import com.project.contactmessage.entity.ContactMessage;
-import com.project.contactmessage.service.ContactMessageService;
-import com.project.payload.response.business.ResponseMessage;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.List;
-
+ // burada bizim yapimiz RestFull mimariye uygun olacagindan @Controller ile degilde,
+ // bunun Restfull oldugunu belirten @RestController ile annote ediyoruz.
 @RestController
-@RequestMapping("/contactMessages")
+@RequestMapping("/contactMessages") //Gellen Requestleri mapp'lemek icin bunun ile annote ediyoruz.
+// Burada parantez icine yazdigim bir endpoint("/contactMessages")  bu endpointle gelen requestler burda mapp'lenecek.
 @RequiredArgsConstructor
 public class ContactMessageController {
-
+// Burdada controller'dan sonraki layer olan service katmani injekte edilmistir.
     private final ContactMessageService contactMessageService;
 
-    // Not: save() **************************************************
     /**
      * {
      *     "name": "Mirac",
@@ -48,6 +35,10 @@ public class ContactMessageController {
      *     "message": "this is my message"
      * }
      */ // Ornek JSON
+
+    // Not: save() **************************************************
+    // Bize gelen Json dosyasini almamiza yarayan @RequestBody dir ,
+    // @Valid Request classindan gelecek olan dosyayi validationdan gecir demektir.
     @PostMapping("/save") // http://localhost:8080/contactMessages/save   + POST + JSON
     public ResponseMessage<ContactMessageResponse> save(@RequestBody @Valid ContactMessageRequest contactMessageRequest){
 
@@ -67,6 +58,9 @@ public class ContactMessageController {
     }
 
     // Not: searchByEmail ***************************************
+
+     // Burada email'i requestparam ile alacagimizdan http://localhost:8080/contactMessages/searchByEmail sonra asagidaki gibi emaili eklemeliyiz
+     // digerlerini endpoint'a yazmak zorunda degiliz cünkü onlarin default degerleri var ama emaili yazmak zorundayiz default degeri yok.
     @GetMapping("/searchByEmail") // http://localhost:8080/contactMessages/searchByEmail?email=aaa@bbb.com
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     public Page<ContactMessageResponse> searchByEmail(
@@ -100,6 +94,8 @@ public class ContactMessageController {
         return ResponseEntity.ok(contactMessageService.deleteById(contactMessageId));
     }
 
+    // requestparamda farki istedigimiz keydegeri endpoint'te yazili olarak gelmeyecek.
+     // PathVariable ile calisiyorsak {contactMessageId} path'ten sonraki kisima metohd'un icerisindeki field'in ismi süslü parantez icerisinde yazilmalidir.
     // Not: deleteByIdWithPath *********************************
     @DeleteMapping("/deleteById/{contactMessageId}") //http://localhost:8080/contactMessages/deleteById/1
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
@@ -115,7 +111,7 @@ public class ContactMessageController {
     }
 
 
-    // Not: getById *********************************************
+    // Not: getByIdPath *********************************************
     @GetMapping("/getById/{contactMessageId}") // http://localhost:8080/contactMessages/getById/1  + GET
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     public ResponseEntity<ContactMessage> getByIdPath(@PathVariable Long contactMessageId){
@@ -123,6 +119,10 @@ public class ContactMessageController {
     }
 
     // Not: updateById ******************************************
+     // Long contactMessageId hangi objenin update edilecegi alindi.
+     // @RequestBody bir Json ile client'an gerekli verilerin alinmasi saglanir
+    // alinan bu Json'in tamamen null olarak gelmemesi icin iclerinden 1 tanede olsa bir verinin dolu olmasi icin @NotNull kullanilir.
+    // gelen Json'i   ContactMessageUpdateRequest classi karsilar.
     @PutMapping("/updateById/{contactMessageId}") // http://localhost:8080/contactMessages/updateById/1  + PUT + JSON
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     public ResponseEntity<ResponseMessage<ContactMessageResponse>> updateById(@PathVariable Long contactMessageId ,
@@ -132,6 +132,8 @@ public class ContactMessageController {
 
 
     // Not: Odev --> searchByDateBetween ************************
+     // Burada Page Yapıda kullanılabilirdi ancak list yapıyı kullandığımızda dönem değer olarak boş gelmesi durumunda herhangi bir hata almayiz.
+     // Bir Veri alacak olsaydık pathVarialble kullanırdık ancak burada birden çok veri alacağımızdan dolayı RequestParam kullanilmistir
     @GetMapping("/searchBetweenDates") // http://localhost:8080/contactMessages/searchBetweenDates?beginDate=2023-09-13&endDate=2023-09-15
     @PreAuthorize("hasAnyAuthority('ADMIN','MANAGER','ASSISTANT_MANAGER')")
     public ResponseEntity<List<ContactMessage>> searchByDateBetween(

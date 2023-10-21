@@ -41,22 +41,31 @@ public class User {
 
     private String surname;
 
+    // @JsonFormat bu verinin alinirken kolaylik olsun diye yani su sekilde alina bilmesi icin "yyyy-MM-dd",
+    // JsonFormat.Shape.STRING--> Bununla Json formatin string olarak gelebilecegini söylüyoruz.
+    // patternlede istedigimiz formati belirliyoruz.
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birthDay;
 
     private String birthPlace;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // Db'de giderken Jsonda olmasin ama Db'e gelirken json'da  olsun ve Db'e  yazilsin
+    // Db'den client'a giderken  Jsonda olmasin, ama client'tan  Db'e gelirken json'da  olsun ve DB'e  yazilsin-->
+    // iste bunu saglayan annt. @JsonProperty(access = JsonProperty.Access.WRITE_ONLY),
+    // Ama zaten biz pojo'yu client'ta göndermiyecegiz ancak gereklilik durumunda veya ess kaza gönderdik. onun icin böyle bir önlem oliyoruz.
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column(unique =true)
     private String phoneNumber;
 
+// Bununla @Column(unique = true)  unique olmasini sagliyor.
+// Ancak bu tarz datalar Requeste'lerden geldiginde  service katmaninda bularin kontrolu mutlaka yapilmali.
     @Column(unique = true)
     private String email;
 
 
-// built_in true yapatigimizda bu kullanici silinemez ve silinmesi bile teklif edilemez. Bunu delete methodlarinda kontrol etmeliyiz.
+// built_in true yapatigimizda bu kullanici silinemez ve silinmesi bile teklif edilemez.
+// Bunu service katmaninda delete methodlarinda kontrol etmeliyiz.
     private Boolean built_in;
 
     private String motherName;
@@ -75,13 +84,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)// Db'de giderken Jsonda olmasin ama Db'e gelirken json'da  olsun ve Db'e  yazilsin
+    // Db'de giderken Jsonda olmasin ama Db'e gelirken json'da  olsun ve Db'e  yazilsin
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToOne
     private UserRole userRole;
 
 
-
-    @OneToMany(mappedBy = "teacher",cascade = CascadeType.REMOVE)//cascade = CascadeType.REMOVE bunun anlami bir ögrenci silinirse bu ögr. infolarida silinsin diye.
+    //cascade = CascadeType.REMOVE bunun anlami bir ögrenci silinirse bu ögr. infolarida silinsin diye.
+    @OneToMany(mappedBy = "teacher",cascade = CascadeType.REMOVE)
     private List<StudentInfo> studentInfos; // set olabilir ??
 
     @JsonIgnore
@@ -102,4 +112,11 @@ public class User {
     )
     private List<Meet> meetList;
 }
+
+// Biz burda Teacher, Student, ... kullanicilarin tamami icin bir user entity'si olusturduk,
+// ancak burda bazi field'lar bazi role type'leri icin gerekli degil bunu her rolle type icin bir entity class'i olusturarak
+// cözebilecegimizi düsünebiliriz o zamanda her entity class'i icin bir controller bir service ve bir repository olacakti
+// bu kadar repository DB icin yük olusturacakti ve cok fazla classtan dolayida kod okunurluluguda iyi olmayacakti ancak
+// biz yukardaki yapi ile bunu cözüme kavusturmus olduk. Yani tek bir user entity'si olustursarak cok hizli bir yap saglamis olacagiz.
+// Bütün field'lar bir entity'de olunca null deger görecegiz ancak suan icin en iyi yöntem bu...
 

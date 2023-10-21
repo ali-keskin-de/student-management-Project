@@ -38,6 +38,8 @@ public class ContactMessageRequest {
     private String message;
 }
 
-// @Column gibi database bakan annotation'lari burda kullanmayiz.
+// @Column gibi database bakan annotation'lari burda kullanmayiz. (Validation burda olmali)
+// Bu DTO'da biz kendisi settlencek olan field'larin disindakileri burda yazariz.
+// Budaki field'larin isimleri pojo'daki ile ayni olmak zorunda degil cünkü biz bunlari elle setleyecegiz.
 
 
